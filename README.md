@@ -1,207 +1,169 @@
-# AgroSat Mobile
+# AgroOrbit
 
-Aplicativo mobile da Global Solution 2026.1 — projeto **AgroOrbit**.
+Plataforma de monitoramento inteligente de fazendas via satélite — FIAP Global Solution 2026.
 
-## Ideia do projeto
-
-O AgroOrbit é uma plataforma de monitoramento inteligente de fazendas. A proposta combina **satélite, drones, IoT e inteligência artificial** para identificar pragas, secas e anomalias na lavoura, gerar alertas automáticos e apoiar o fazendeiro na tomada de decisão pelo celular.
+**Tema:** Space Connect — Tecnologia Espacial Aplicada a Desafios Reais
 
 ---
 
-## Stack
+## Sobre o projeto
 
-| Tecnologia | Uso |
-|---|---|
-| React Native + Expo (~54) | Framework mobile |
-| TypeScript | Tipagem em todo o projeto |
-| Firebase Auth | Autenticação principal (login, cadastro, recuperação) |
-| Open-Meteo API | Dados reais de clima por GPS |
-| API Java/SOA AgroOrbit | Backend principal (JWT, CRUD fazendas, análise de risco) |
-| AsyncStorage | Sessão JWT Java + índice local de fazendas criadas |
-| Expo Location | GPS — recurso nativo obrigatório |
-| react-native-maps | Mapa interativo (mobile/native) |
-| react-native-svg | SVG do Brasil (browser/web) |
+O AgroOrbit conecta o ecossistema espacial ao agronegócio brasileiro. A plataforma utiliza dados de satélite (NDVI, temperatura, umidade do solo e irradiância solar) para detectar riscos de seca e pragas antes que causem perda de colheita, classificando cada lavoura em três níveis: **NORMAL**, **ALERTA** ou **CRÍTICO**.
+
+**Problema:** Fazendeiros perdem colheitas porque pragas e secas são detectadas tarde demais, sem visibilidade em tempo real da propriedade.
+
+**Solução:** API REST + Web Service SOAP integrados a um app mobile que entrega análise de risco em tempo real, alertas automáticos e dados climáticos via GPS — diretamente no celular do produtor.
 
 ---
 
-## Como rodar
+## Estrutura do repositório
+
+```
+agroOrbit_sprint/
+├── agroorbit-api-main/   API REST + Web Service SOAP (Java / Spring Boot)
+└── mobile/               Aplicativo mobile (React Native / Expo)
+```
+
+---
+
+## Componentes
+
+### API Java/SOA (`agroorbit-api-main/`)
+
+API REST desenvolvida com Java 17 e Spring Boot 3.2. Implementa os princípios de SOA: baixo acoplamento, contratos de serviço, reutilização e separação de responsabilidades.
+
+**Tecnologias:** Java 17, Spring Boot, Oracle Database, Flyway, JWT, Spring-WS (SOAP), Springdoc OpenAPI (Swagger), Bucket4j (rate limiting)
+
+**Funcionalidades:**
+- CRUD completo de fazendas via REST
+- Análise de risco automática por leitura de satélite (NDVI, temperatura, umidade, irradiância)
+- Web Service SOAP para consulta e registro de alertas
+- Dashboard agregado com distribuição de risco por estado
+- Autenticação JWT com roles (ADMIN, FAZENDEIRO, ANALISTA)
+- Rate limiting e audit log por requisição
+
+**Endpoints principais:**
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | Autenticação JWT |
+| `POST` | `/api/v1/analise` | Análise de risco da fazenda |
+| `GET` | `/api/v1/dashboard` | Métricas agregadas |
+| `GET` | `/api/v1/alertas` | Fazendas em alerta/crítico |
+| `GET` | `/api/v1/fazendas/{email}` | Dados de uma fazenda |
+| `DELETE` | `/api/v1/fazendas/{email}` | Remove uma fazenda |
+| SOAP | `/ws` | Consulta e registro de alertas via WSDL |
+
+**Como rodar:**
 
 ```bash
+cd agroorbit-api-main
+
+# Configure o banco em src/main/resources/application.properties:
+# spring.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+# spring.datasource.username=SEU_RM
+# spring.datasource.password=SUA_SENHA
+
+mvn spring-boot:run
+```
+
+Swagger disponível em: `http://localhost:8080/swagger-ui/index.html`
+WSDL disponível em: `http://localhost:8080/ws/agroorbit.wsdl`
+
+---
+
+### App Mobile (`mobile/`)
+
+Aplicativo React Native com Expo, integrado à API Java via JWT e à Open-Meteo API para dados climáticos reais por GPS.
+
+**Tecnologias:** React Native, Expo, TypeScript, Firebase Auth, AsyncStorage, Expo Location, react-native-maps
+
+**Telas:**
+- **Início** — índice de saúde da operação, clima em tempo real, acesso rápido e alertas ativos
+- **Fazendas** — listagem de fazendas da API + mock, detalhes por talhão, criação e remoção
+- **Alertas** — central de alertas com filtro por status e modal de detalhes
+- **Mapa** — mapa geoespacial com pins coloridos por nível de risco
+- **Drone** — missões de varredura com análise de anomalias por IA
+
+**Como rodar:**
+
+```bash
+cd mobile
 npm install
 npx expo start
 ```
 
-Pressione `w` para abrir no browser, `a` para Android, `i` para iOS.
+Pressione `w` (browser), `a` (Android) ou `i` (iOS).
+
+> Antes de rodar, configure `src/config/firebase.ts` com as credenciais do seu projeto Firebase e ajuste `JAVA_API_BASE_URL` em `src/config/environment.ts` conforme o ambiente (localhost, emulador ou celular físico).
 
 ---
 
-## Estrutura
+## Integração entre serviços
 
-```
-src/
-  components/     Componentes reutilizáveis (Cards, StatusBadge, CustomButton)
-  config/         Configuração de ambiente e Firebase
-  context/        AuthContext — Firebase + demo login + estado do usuário
-  data/           Dados simulados locais (fazendas, talhões, alertas, relatórios)
-  navigation/     AppNavigator (5 abas) + AuthNavigator + RootNavigator
-  screens/        Telas do app
-  services/       apiService, javaIntegrationService, mockService, weatherService
-  theme/          Cores, espaçamentos e estilos globais
-```
+O app mobile consome a API Java/SOA após o login Firebase:
 
-### Telas
-
-| Tela | Descrição |
-|---|---|
-| `LoginScreen` | Login Firebase, cadastro e modo demo |
-| `DashboardScreen` | Status geral, clima real via GPS, formulário de nova análise |
-| `FazendasScreen` | Lista fazendas da API Java + mock, accordion com detalhes, remover |
-| `AlertasScreen` | Alertas da API Java + mock em paralelo, filtro por status, modal de detalhes |
-| `MapaScreen` | Mapa com react-native-maps (mobile) ou SVG do Brasil (browser) |
-| `DroneScreen` | Missões de drone com status, duração, cobertura e análise de anomalias |
-
-### Navegação
-
-5 abas: **Início** · **Fazendas** · **Alertas** · **Mapa** · **Drone**
+1. Login visual via Firebase Auth (mobile).
+2. Login técnico automático na API Java para obter o JWT.
+3. Dados de fazendas, alertas e dashboard são buscados na API Java com `Authorization: Bearer {jwt}`.
+4. Se a API estiver indisponível, o app usa dados mockados locais — a apresentação nunca trava.
+5. A API Java internamente integra com o Web Service SOAP para registro e consulta de alertas.
 
 ---
 
-## Login e autenticação
-
-O app tem três modos configuráveis em `src/config/environment.ts`.
-
-### Modo demo (padrão)
-
-Funciona sem Firebase e sem API Java. Use qualquer email com senha de pelo menos 4 caracteres, ou clique em **Entrar no Modo Demo**.
+## Arquitetura SOA
 
 ```
-Email: produtor@agrosat.com
-Senha: 123456
+┌─────────────────────────────────┐
+│         App Mobile              │
+│  (React Native + Expo)          │
+│  Firebase Auth | GPS | Maps     │
+└────────────┬────────────────────┘
+             │ REST / JWT
+             ▼
+┌─────────────────────────────────┐
+│       API REST AgroOrbit        │
+│  (Java 17 + Spring Boot)        │
+│  /analise  /dashboard  /alertas │
+└────────────┬────────────────────┘
+             │ Interno
+             ▼
+┌─────────────────────────────────┐
+│     Web Service SOAP            │
+│  ConsultarFazenda               │
+│  RegistrarAlerta                │
+│  WSDL exposto em /ws            │
+└────────────┬────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────┐
+│      Oracle Database            │
+│  fazendas | leituras_satelite   │
+└─────────────────────────────────┘
 ```
-
-### Firebase Auth
-
-1. Preencha as chaves em `src/config/firebase.ts`.
-2. Em `environment.ts`, confirme:
-
-```ts
-USE_FIREBASE_AUTH: true
-```
-
-O app passa a usar `signInWithEmailAndPassword`, `createUserWithEmailAndPassword` e recuperação de senha via Firebase.
-
-### API Java/SOA
-
-O app faz um **login técnico automático** na API Java para obter o JWT — o usuário não precisa saber disso. O login visual continua sendo feito pelo Firebase.
-
-```ts
-USE_JAVA_API_AUTH: true
-USE_JAVA_API_DATA: true
-```
-
-Credenciais técnicas usadas internamente:
-
-```
-fazendeiro@agroorbit.com / agroorbit2026
-```
-
----
-
-## Integração com a API Java/SOA
-
-### Fluxo
-
-1. Usuário faz login pelo Firebase (ou modo demo).
-2. App faz login técnico em `POST /api/v1/auth/login` e salva o JWT no AsyncStorage.
-3. Todas as requisições usam `Authorization: Bearer {jwt}`.
-4. Em caso de 401, o JWT é renovado automaticamente e a requisição é repetida.
-5. Se a API estiver offline, o app cai automaticamente para dados mockados.
-
-### Endpoints consumidos
-
-| Método | Rota | Tela |
-|---|---|---|
-| `POST` | `/auth/login` | Automático (login técnico) |
-| `POST` | `/analise` | Dashboard — nova análise |
-| `GET` | `/dashboard` | Dashboard |
-| `GET` | `/alertas?scoreMinimo=50` | Alertas |
-| `GET` | `/fazendas/{email}` | Fazendas |
-| `DELETE` | `/fazendas/{email}` | Fazendas |
-
-### Índice local de fazendas
-
-Quando o usuário cria uma fazenda via "Nova análise", o email gerado é salvo localmente com `registrarFazendaCriada()`. A tela de Fazendas usa `getFazendasCriadas()` para saber quais fazendas buscar na API. Ao remover uma fazenda, `removerFazendaCriada()` limpa o índice local e chama `DELETE /fazendas/{email}` na API.
-
-### Configuração da URL
-
-Edite `src/config/environment.ts`:
-
-```ts
-// Browser (web)
-JAVA_API_BASE_URL: 'http://localhost:8080/api/v1'
-
-// Android Emulator
-JAVA_API_BASE_URL: 'http://10.0.2.2:8080/api/v1'
-
-// Celular físico no Expo Go (use o IP da sua máquina)
-JAVA_API_BASE_URL: 'http://192.168.0.10:8080/api/v1'
-```
-
-### Swagger da API
-
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
----
-
-## Dados reais e simulados
-
-### Reais
-
-- **Clima:** Open-Meteo API, consumida via GPS do dispositivo. Retorna temperatura, umidade, precipitação, cobertura de nuvens, probabilidade de chuva e risco de seca.
-- **Fazendas:** `GET /fazendas/{email}` — fazendas criadas pelo usuário via "Nova análise".
-- **Dashboard:** `GET /dashboard` — totais e distribuição de risco da API Java.
-- **Alertas:** `GET /alertas` — fazendas em nível ALERTA ou CRÍTICO.
-
-### Simulados (mock local)
-
-Fazendas de demonstração, talhões, missões de drone e relatórios são simulados localmente para garantir que o app funcione mesmo sem API.
-
----
-
-## Manipulação de dados
-
-O app atende ao requisito de manipulação de dados porque:
-
-- Consome dados reais da Open-Meteo e da API Java/SOA.
-- Exibe dados simulados de fazendas, talhões e missões de drone.
-- Filtra alertas por status (Todos / Abertos / Em Andamento / Resolvidos).
-- Altera status de alertas e persiste com AsyncStorage.
-- Cria fazendas via `POST /analise` e as remove via `DELETE /fazendas/{email}`.
-- Usa GPS (Expo Location) para localização e dados climáticos em tempo real.
-
----
-
-## Recursos mobile utilizados
-
-- **GPS / Expo Location** — captura coordenadas reais para clima e payload de análise.
-- **react-native-maps** — mapa interativo no mobile com pins coloridos por status.
-- **AsyncStorage** — persistência de sessão JWT, índice de fazendas criadas e status de alertas.
-
----
-
-## Observações para a apresentação
-
-- O app não depende obrigatoriamente da API Java. Fallback automático para mock garante que a apresentação não trave.
-- No celular físico, `localhost` não funciona — use o IP da máquina onde a API está rodando.
-- A tela de Mapa usa arquivos separados por plataforma: `MapaScreen.tsx` (mobile, com react-native-maps) e `MapaScreen.web.tsx` (browser, com SVG do Brasil).
-- Os dados de missões de drone são simulados localmente — a API Java/SOA não expõe endpoint de drone por decisão arquitetural.
 
 ---
 
 ## ODS atendidos
 
-- **ODS 2** — Fome zero e agricultura sustentável
-- **ODS 9** — Indústria, inovação e infraestrutura
-- **ODS 13** — Ação contra a mudança global do clima
+| ODS | Contribuição |
+|---|---|
+| **ODS 2** — Fome Zero e Agricultura Sustentável | Detecção precoce de pragas e secas reduz perda de colheita |
+| **ODS 9** — Indústria, Inovação e Infraestrutura | Integração de tecnologia espacial com IA no agronegócio |
+| **ODS 13** — Ação Contra a Mudança Global do Clima | Monitoramento de NDVI e temperatura para adaptação climática |
+
+---
+
+## Integrantes
+
+| Nome | RM |
+|---|---|
+| Fernanda Rocha Menon | RM 554673 |
+| Luiza Macena Dantas | RM 556237 |
+| Luan Ramos Garcia de Souza | RM 558537 |
+| Matheus Ricciotti | RM 556930 |
+| Matheus Bortolotto | RM 555189 |
+
+---
+
+*FIAP — Engenharia de Software — Global Solution 2026 — Space Connect*

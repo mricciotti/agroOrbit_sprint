@@ -281,18 +281,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },
-  odsContainer: {
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    backgroundColor: `${colors.primary}10`,
-    borderRadius: borderRadius.full,
-  },
-  odsText: {
-    fontSize: fontSize.xs,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
 });
 
 export default LoginScreen;

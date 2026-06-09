@@ -1,10 +1,12 @@
-# AgroSat Mobile
+# AgroOrbit Mobile
 
 Aplicativo mobile da Global Solution 2026.1 — projeto **AgroOrbit**.
 
-## Ideia do projeto
+## Sobre o projeto
 
 O AgroOrbit é uma plataforma de monitoramento inteligente de fazendas. A proposta combina **satélite, drones, IoT e inteligência artificial** para identificar pragas, secas e anomalias na lavoura, gerar alertas automáticos e apoiar o fazendeiro na tomada de decisão pelo celular.
+
+O app se integra com a [API Java/SOA AgroOrbit](../agroorbit-api-main/Readme.md) para análise de risco em tempo real, e com a Open-Meteo API para dados climáticos via GPS. Quando a API está offline, o app cai automaticamente para dados mockados locais.
 
 ---
 
@@ -14,7 +16,7 @@ O AgroOrbit é uma plataforma de monitoramento inteligente de fazendas. A propos
 |---|---|
 | React Native + Expo (~54) | Framework mobile |
 | TypeScript | Tipagem em todo o projeto |
-| Firebase Auth | Autenticação principal (login, cadastro, recuperação) |
+| Firebase Auth | Autenticação (login, cadastro, recuperação de senha) |
 | Open-Meteo API | Dados reais de clima por GPS |
 | API Java/SOA AgroOrbit | Backend principal (JWT, CRUD fazendas, análise de risco) |
 | AsyncStorage | Sessão JWT Java + índice local de fazendas criadas |
@@ -27,6 +29,7 @@ O AgroOrbit é uma plataforma de monitoramento inteligente de fazendas. A propos
 ## Como rodar
 
 ```bash
+cd mobile
 npm install
 npx expo start
 ```
@@ -41,8 +44,8 @@ Pressione `w` para abrir no browser, `a` para Android, `i` para iOS.
 src/
   components/     Componentes reutilizáveis (Cards, StatusBadge, CustomButton)
   config/         Configuração de ambiente e Firebase
-  context/        AuthContext — Firebase + demo login + estado do usuário
-  data/           Dados simulados locais (fazendas, talhões, alertas, relatórios)
+  context/        AuthContext — Firebase + estado do usuário
+  data/           Dados simulados locais (fazendas, talhões, alertas)
   navigation/     AppNavigator (5 abas) + AuthNavigator + RootNavigator
   screens/        Telas do app
   services/       apiService, javaIntegrationService, mockService, weatherService
@@ -53,7 +56,7 @@ src/
 
 | Tela | Descrição |
 |---|---|
-| `LoginScreen` | Login Firebase, cadastro e modo demo |
+| `LoginScreen` | Login Firebase e cadastro |
 | `DashboardScreen` | Status geral, clima real via GPS, formulário de nova análise |
 | `FazendasScreen` | Lista fazendas da API Java + mock, accordion com detalhes, remover |
 | `AlertasScreen` | Alertas da API Java + mock em paralelo, filtro por status, modal de detalhes |
@@ -68,42 +71,16 @@ src/
 
 ## Login e autenticação
 
-O app tem três modos configuráveis em `src/config/environment.ts`.
-
-### Modo demo (padrão)
-
-Funciona sem Firebase e sem API Java. Use qualquer email com senha de pelo menos 4 caracteres, ou clique em **Entrar no Modo Demo**.
-
-```
-Email: produtor@agrosat.com
-Senha: 123456
-```
-
-### Firebase Auth
+O app usa **Firebase Auth** como autenticação principal. Para configurar:
 
 1. Preencha as chaves em `src/config/firebase.ts`.
-2. Em `environment.ts`, confirme:
+2. Confirme em `src/config/environment.ts`:
 
 ```ts
 USE_FIREBASE_AUTH: true
 ```
 
-O app passa a usar `signInWithEmailAndPassword`, `createUserWithEmailAndPassword` e recuperação de senha via Firebase.
-
-### API Java/SOA
-
-O app faz um **login técnico automático** na API Java para obter o JWT — o usuário não precisa saber disso. O login visual continua sendo feito pelo Firebase.
-
-```ts
-USE_JAVA_API_AUTH: true
-USE_JAVA_API_DATA: true
-```
-
-Credenciais técnicas usadas internamente:
-
-```
-fazendeiro@agroorbit.com / agroorbit2026
-```
+Cadastro, login e recuperação de senha são feitos via Firebase. Após o login, o app realiza automaticamente um **login técnico** na API Java para obter o JWT — o usuário não precisa saber disso.
 
 ---
 
@@ -111,7 +88,7 @@ fazendeiro@agroorbit.com / agroorbit2026
 
 ### Fluxo
 
-1. Usuário faz login pelo Firebase (ou modo demo).
+1. Usuário faz login pelo Firebase.
 2. App faz login técnico em `POST /api/v1/auth/login` e salva o JWT no AsyncStorage.
 3. Todas as requisições usam `Authorization: Bearer {jwt}`.
 4. Em caso de 401, o JWT é renovado automaticamente e a requisição é repetida.
@@ -120,7 +97,7 @@ fazendeiro@agroorbit.com / agroorbit2026
 ### Endpoints consumidos
 
 | Método | Rota | Tela |
-|---|---|---|
+| --- | --- | --- |
 | `POST` | `/auth/login` | Automático (login técnico) |
 | `POST` | `/analise` | Dashboard — nova análise |
 | `GET` | `/dashboard` | Dashboard |
@@ -149,7 +126,7 @@ JAVA_API_BASE_URL: 'http://192.168.0.10:8080/api/v1'
 
 ### Swagger da API
 
-```
+```text
 http://localhost:8080/swagger-ui/index.html
 ```
 
@@ -166,20 +143,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ### Simulados (mock local)
 
-Fazendas de demonstração, talhões, missões de drone e relatórios são simulados localmente para garantir que o app funcione mesmo sem API.
-
----
-
-## Manipulação de dados
-
-O app atende ao requisito de manipulação de dados porque:
-
-- Consome dados reais da Open-Meteo e da API Java/SOA.
-- Exibe dados simulados de fazendas, talhões e missões de drone.
-- Filtra alertas por status (Todos / Abertos / Em Andamento / Resolvidos).
-- Altera status de alertas e persiste com AsyncStorage.
-- Cria fazendas via `POST /analise` e as remove via `DELETE /fazendas/{email}`.
-- Usa GPS (Expo Location) para localização e dados climáticos em tempo real.
+Fazendas de demonstração, talhões, missões de drone e alertas são simulados localmente para garantir que o app funcione mesmo sem API.
 
 ---
 
@@ -205,3 +169,17 @@ O app atende ao requisito de manipulação de dados porque:
 - **ODS 2** — Fome zero e agricultura sustentável
 - **ODS 9** — Indústria, inovação e infraestrutura
 - **ODS 13** — Ação contra a mudança global do clima
+
+---
+
+## Integrantes
+
+| Nome | RM |
+| --- | --- |
+| Fernanda Rocha Menon | RM 554673 |
+| Luiza Macena Dantas | RM 556237 |
+| Luan Ramos Garcia de Souza | RM 558537 |
+| Matheus Ricciotti | RM 556930 |
+| Matheus Bortolotto | RM 555189 |
+
+FIAP — Engenharia de Software — Global Solution 2026 — Space Connect

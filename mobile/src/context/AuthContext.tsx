@@ -10,14 +10,14 @@ import {
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../config/firebase';
 import { ENV } from '../config/environment';
-import { clearJavaSession, clearFazendasCriadas, javaLogin } from '../services/apiService';
+import { clearJavaSession, clearFazendasCriadas } from '../services/apiService';
 
 export interface User {
   id: string;
   nome: string;
   email: string;
   fazendaPrincipal?: string;
-  provider: 'firebase' | 'java-api' | 'demo';
+  provider: 'firebase' | 'java-api';
   role?: string;
 }
 
@@ -29,21 +29,11 @@ interface AuthContextData {
   signUp: (nome: string, email: string, senha: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
-  demoLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AUTH_STORAGE_KEY = '@agrosat:auth';
-
-const DEMO_USER: User = {
-  id: 'demo-1',
-  nome: 'Produtor Demo',
-  email: 'produtor@agrosat.com',
-  fazendaPrincipal: '1',
-  provider: 'demo',
-  role: 'FAZENDEIRO',
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -134,19 +124,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return true;
       }
 
-      // Fallback demo para garantir que a apresentação funcione mesmo sem Firebase/API.
-      if (email && senha.length >= 4) {
-        await persistUser({
-          id: `user-${Date.now()}`,
-          nome: email.split('@')[0],
-          email,
-          fazendaPrincipal: '1',
-          provider: 'demo',
-          role: 'FAZENDEIRO',
-        });
-        return true;
-      }
-
       return false;
     } catch (error) {
       console.error('Erro no login:', error);
@@ -168,11 +145,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
         setUser(null);
         suppressNextFirebaseUserRef.current = false;
-        return true;
-      }
-
-      // A API Java documentada tem login fixo, não endpoint de cadastro. Em modo sem Firebase, cria usuário local demo.
-      if (nome && email && senha.length >= 4) {
         return true;
       }
 
@@ -213,33 +185,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const demoLogin = async () => {
-    try {
-      setIsLoading(true);
-      if (ENV.USE_JAVA_API_AUTH) {
-        try {
-          const javaUser = await javaLogin('fazendeiro@agroorbit.com', 'agroorbit2026');
-          await persistUser({
-            id: javaUser.email,
-            nome: 'Fazendeiro AgroOrbit',
-            email: javaUser.email,
-            fazendaPrincipal: '1',
-            provider: 'java-api',
-            role: javaUser.role,
-          });
-          return;
-        } catch (error) {
-          console.warn('API Java indisponível. Entrando em modo demo.', error);
-        }
-      }
-      await persistUser(DEMO_USER);
-    } catch (error) {
-      console.error('Erro no login demo:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -250,7 +195,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         signUp,
         signOut,
         resetPassword,
-        demoLogin,
       }}
     >
       {children}

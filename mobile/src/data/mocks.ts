@@ -35,28 +35,6 @@ export interface Alerta {
   confiancaIA: number;
 }
 
-export interface Relatorio {
-  id: string;
-  semana: string;
-  titulo: string;
-  resumo: string;
-  dataGeracao: string;
-  anomaliasDetectadas: {
-    tipo: string;
-    fonte: string;
-    afetados: number;
-    confiancaIA: number;
-  }[];
-  metricas: {
-    areaMonitorada: number;
-    voosRealizados: number;
-    leiturasSatelite: number;
-    leiturasIoT: number;
-  };
-  odsRelacionadas: number[];
-  recomendacoes: string[];
-}
-
 // Dados mockados das fazendas e talhões
 export const fazendas: Fazenda[] = [
   {
@@ -257,65 +235,3 @@ export const alertasIniciais: Alerta[] = [
   },
 ];
 
-// Dados mockados dos relatórios semanais
-export const relatorios: Relatorio[] = [
-  {
-    id: 'r1',
-    semana: '08/01/2024 - 14/01/2024',
-    titulo: 'Relatório Semanal - Semana 2',
-    resumo: 'Semana marcada por condições climáticas adversas. 3 alertas críticos registrados.',
-    dataGeracao: '2024-01-14T23:59:00Z',
-    anomaliasDetectadas: [
-      {
-        tipo: 'Estresse Hídrico',
-        fonte: 'Satélite',
-        afetados: 2,
-        confiancaIA: 87,
-      },
-      {
-        tipo: 'Falha de Vegetação',
-        fonte: 'Drone',
-        afetados: 1,
-        confiancaIA: 91,
-      },
-    ],
-    metricas: {
-      areaMonitorada: 4240,
-      voosRealizados: 12,
-      leiturasSatelite: 28,
-      leiturasIoT: 1680,
-    },
-    odsRelacionadas: [2, 9, 13],
-    recomendacoes: [
-      'Priorizar irrigação nos talhões com estresse hídrico crítico',
-      'Agendar inspeção manual no Talhão A da Fazenda Nova Esperança',
-      'Revisar calendário de aplicação de defensivos na Fazenda Boa Vista',
-    ],
-  },
-  {
-    id: 'r2',
-    semana: '01/01/2024 - 07/01/2024',
-    titulo: 'Relatório Semanal - Semana 1',
-    resumo: 'Início de ano com condições favoráveis. Monitoramento preventivo em dia.',
-    dataGeracao: '2024-01-07T23:59:00Z',
-    anomaliasDetectadas: [
-      {
-        tipo: 'Mancha Foliar',
-        fonte: 'Drone',
-        afetados: 1,
-        confiancaIA: 68,
-      },
-    ],
-    metricas: {
-      areaMonitorada: 4240,
-      voosRealizados: 8,
-      leiturasSatelite: 21,
-      leiturasIoT: 1512,
-    },
-    odsRelacionadas: [2, 9, 13],
-    recomendacoes: [
-      'Manter rotina de monitoramento',
-      'Verificar calibração dos sensores IoT',
-    ],
-  },
-];

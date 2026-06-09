@@ -27,9 +27,6 @@ JAVA_API_BASE_URL: 'http://localhost:8080/api/v1',
   // Mantém Firebase Auth como autenticação principal do mobile.
   USE_FIREBASE_AUTH: true,
 
-  // Se true, o demoLogin tenta usar a API Java antes de cair no usuário demo local.
-  USE_JAVA_API_AUTH: true,
-
   // Open-Meteo: dados reais de clima usados no Dashboard.
   OPEN_METEO_BASE_URL: 'https://api.open-meteo.com/v1/forecast',
 };
