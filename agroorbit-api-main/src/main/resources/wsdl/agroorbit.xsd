@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://agroorbit.com/soap"
+           xmlns:tns="http://agroorbit.com/soap"
+           elementFormDefault="qualified">
+
+    <xs:element name="consultarFazendaRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="email" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="consultarFazendaResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="id" type="xs:long" minOccurs="0"/>
+                <xs:element name="nome" type="xs:string" minOccurs="0"/>
+                <xs:element name="proprietario" type="xs:string" minOccurs="0"/>
+                <xs:element name="email" type="xs:string" minOccurs="0"/>
+                <xs:element name="estado" type="xs:string" minOccurs="0"/>
+                <xs:element name="municipio" type="xs:string" minOccurs="0"/>
+                <xs:element name="culturaPlantada" type="xs:string" minOccurs="0"/>
+                <xs:element name="areaHectares" type="xs:double" minOccurs="0"/>
+                <xs:element name="mensagem" type="xs:string" minOccurs="0"/>
+                <xs:element name="sucesso" type="xs:boolean"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="registrarAlertaRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="emailFazenda" type="xs:string"/>
+                <xs:element name="indiceNDVI" type="xs:double"/>
+                <xs:element name="temperaturaMedia" type="xs:double"/>
+                <xs:element name="umidadeSolo" type="xs:double"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="registrarAlertaResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="nivelRisco" type="xs:string"/>
+                <xs:element name="scoreRisco" type="xs:int"/>
+                <xs:element name="recomendacao" type="xs:string"/>
+                <xs:element name="sucesso" type="xs:boolean"/>
+                <xs:element name="mensagem" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
