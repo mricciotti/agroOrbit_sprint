@@ -6,6 +6,17 @@ Plataforma de monitoramento inteligente de fazendas via satélite — FIAP Globa
 
 ---
 
+## Integrantes
+
+| Nome | RM |
+|---|---|
+| Fernanda Rocha Menon | RM 554673 |
+| Luiza Macena Dantas | RM 556237 |
+| Luan Ramos Garcia de Souza | RM 558537 |
+| Matheus Ricciotti | RM 556930 |
+| Matheus Bortolotto | RM 555189 |
+
+---
 ## Sobre o projeto
 
 O AgroOrbit conecta o ecossistema espacial ao agronegócio brasileiro. A plataforma utiliza dados de satélite (NDVI, temperatura, umidade do solo e irradiância solar) para detectar riscos de seca e pragas antes que causem perda de colheita, classificando cada lavoura em três níveis: **NORMAL**, **ALERTA** ou **CRÍTICO**.
@@ -152,17 +163,6 @@ O app mobile consome a API Java/SOA após o login Firebase:
 | **ODS 9** — Indústria, Inovação e Infraestrutura | Integração de tecnologia espacial com IA no agronegócio |
 | **ODS 13** — Ação Contra a Mudança Global do Clima | Monitoramento de NDVI e temperatura para adaptação climática |
 
----
-
-## Integrantes
-
-| Nome | RM |
-|---|---|
-| Fernanda Rocha Menon | RM 554673 |
-| Luiza Macena Dantas | RM 556237 |
-| Luan Ramos Garcia de Souza | RM 558537 |
-| Matheus Ricciotti | RM 556930 |
-| Matheus Bortolotto | RM 555189 |
 
 ---
 
